@@ -66,7 +66,7 @@ VALUES
 (null, 'VICTOR HUGO DANTAS CARBAJO', 1000.00),
 (null, 'VINICIUS BARBOSA FERNANDES', 1000.00),
 (null, 'VITOR FRANCISCO DE AZEVEDO ZONZINI', 1000.00),
-(null, 'RODRIGO SILVA PERES', 10.00);
+(1, 'RODRIGO SILVA PERES', 10.00);
 
 
 
@@ -83,3 +83,8 @@ CREATE TABLE IF NOT EXISTS comentario (
 INSERT INTO comentario (texto, usuario_id) VALUES
 ('Nossa pirapora é linda e tem uma ótima gestão.', 1),
 ('Concordo chefinho!', 2);
+
+CREATE TABLE IF NOT EXISTS dados_roubados (
+    id SERIAL PRIMARY KEY,
+    dados VARCHAR(255)
+);

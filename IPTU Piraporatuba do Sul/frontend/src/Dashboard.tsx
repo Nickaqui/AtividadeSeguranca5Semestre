@@ -10,44 +10,69 @@ function Dashboard() {
   const [menuAberto, setMenuAberto] = useState(false);
   const [iptu, setIptu] = useState<Iptuu | null>(null);
   const [comentarios, setComentarios] = useState<Comentario[]>([]);
-  
-   useEffect(() => {
-  const buscarDados = async () => {
-    try {
-      const response = await axios.post(
-        "http://localhost:3001/usuario/iptu-por-usuario",
-        { userId: user.id }
-      );
+  const [novoComentario, setNovoComentario] = useState("");
+  const [tipoCodigo, setTipoCodigo] = useState("codigoDeBarras");
+  const [htmlRetorno, setHtmlRetorno] = useState("");
 
-      setIptu(response.data);
-    } catch (error) {
-      console.error("Erro ao buscar IPTU", error);
+  useEffect(() => {
+    const buscarDados = async () => {
+      try {
+
+        const response = await axios.get<{ iptu: Iptuu[] }>(
+          "http://localhost:3001/usuario/iptu-por-usuario?usuarioId=" + user.id
+        );
+
+        setIptu(response.data.iptu[0]);
+      } catch (error) {
+        console.error("Erro ao buscar IPTU", error);
+      }
+    };
+
+    const buscarComentarios = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3001/comentario"
+        );
+
+        setComentarios(response.data);
+      } catch (error) {
+        console.error("Erro ao buscar comentários", error);
+      }
+    };
+    if (user?.id) {
+      buscarDados();
+      buscarComentarios();
     }
-  };
+  }, [user]);
 
-  const buscarComentarios = async () => {
+  const enviarComentario = async () => {
+    if (!novoComentario.trim()) return;
+
     try {
-      const response = await axios.get(
-        "http://localhost:3001/comentario"
-      );
+      await axios.post("http://localhost:3001/comentario", {
+        usuarioId: user.id,
+        texto: novoComentario,
+      });
 
+      // Atualiza lista após enviar
+      const response = await axios.get("http://localhost:3001/comentario");
       setComentarios(response.data);
+
+      setNovoComentario("");
     } catch (error) {
-      console.error("Erro ao buscar comentários", error);
+      console.error("Erro ao enviar comentário", error);
     }
   };
+  const buscarCodigo = async () => {
+    const response = await axios.get(
+      "http://localhost:3001/usuario/codigo-qr-ou-barra?tipo=" + tipoCodigo
+    );
 
-  if (user?.id) {
-    buscarDados();
-    buscarComentarios();
-  }
-}, [user]);
-
-
-            
+    setHtmlRetorno(response.data);
+  };
 
   // dados fictícios de IPTU
- 
+
 
   return (
     <div style={styles.container}>
@@ -78,27 +103,63 @@ function Dashboard() {
         {/* <p>Status: {iptu && iptu.pago ? "Pago ✅" : "Em aberto ❌"}</p> */}
         <p>Status: {iptu?.valor}</p>
       </div>
-      <div style={{ padding: "40px" }}>
-      <h2>Lista de Comentários</h2>
+      <select
+        value={tipoCodigo}
+        onChange={(e) => setTipoCodigo(e.target.value)}
+      >
+        <option value="codigoDeBarras">Código de Barras</option>
+        <option value="qrcode">QR Code</option>
+      </select>
 
-      <ul>
-        {comentarios.map((comentario, index) => (
-          <li key={index}>
-            <div
-              dangerouslySetInnerHTML={{
-                __html: `
+      <button onClick={buscarCodigo}>
+        Gerar Código
+      </button>
+      {htmlRetorno && (
+        <div
+          dangerouslySetInnerHTML={{
+            __html: htmlRetorno,
+          }}
+        />
+      )}
+      <div style={{ padding: "40px" }}>
+        <h2>Lista de Comentários</h2>
+        <div style={{ marginBottom: "20px" }}>
+          <h3>Adicionar Comentário</h3>
+
+          <textarea
+            value={novoComentario}
+            onChange={(e) => setNovoComentario(e.target.value)}
+            placeholder="Digite seu comentário..."
+            style={{
+              width: "100%",
+              height: "80px",
+              padding: "10px",
+              marginBottom: "10px",
+            }}
+          />
+
+          <button onClick={enviarComentario}>
+            Enviar Comentário
+          </button>
+        </div>
+        <ul>
+          {comentarios.map((comentario, index) => (
+            <li key={index}>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: `
                   <strong>Usuário:</strong> ${comentario.usuario_id}
                   <br/>
                   <strong>Mensagem:</strong> ${comentario.texto}
                 `,
-              }}
-            />
-          </li>
-        ))}
-      </ul>
+                }}
+              />
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
-    </div>
-    
+
   );
 }
 

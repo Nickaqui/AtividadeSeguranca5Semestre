@@ -4,10 +4,13 @@ import db from "../database";
 export const criarComentario = async (req: Request, res: Response) => {
     const { texto, usuarioId } = req.body;
 
-    const query = `INSERT INTO comentario (texto, usuario_id) VALUES ('${texto}', ${usuarioId})`;
+    const xss = require('xss');
+
+    const textoLimpo = xss(texto);
+    const query = `INSERT INTO comentario (texto, usuario_id) VALUES ($1, $2)`;
 
     try {
-        await db.query(query);
+        await db.query(query, [textoLimpo, usuarioId]);
         res.status(201).json({ message: "Comentário criado" });
     } catch (err: any) {
         res.status(500).json({ error: err.message });

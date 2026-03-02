@@ -4,16 +4,12 @@ import db from "../database";
 export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     console.log(`Recebendo login para email: ${req.body}`);
-    const query =
-        "SELECT * FROM usuario WHERE email = '" +
-        email +
-        "' AND senha = '" +
-        password +
-        "'";
+    const query = 
+        `SELECT * FROM usuario WHERE email = $1 AND senha = $2`;
 
     console.log(`Query Executada: ${query}`);
 
-    const result = await db.query(query);
+    const result = await db.query(query, [email, password]);
 
     if (result.rowCount && result.rowCount > 0) {
         res.json({ success: true, user: result.rows[0] });
@@ -67,18 +63,31 @@ export const atualizarIptu = async (req: Request, res: Response) => {
     }
 };
 export const getIptuPorIdUsuario = async (req: Request, res: Response) => {
-    const { usuarioId: usuarioId } = req.body;
+    const usuarioId = req.query.usuarioId as string;
 
     const query = `SELECT * FROM iptu WHERE usuario_id = ${usuarioId}`;
-
+    console.log(`Query Executada: ${query}`);
     try {
         const result = await db.query(query);
+        console.log(`Retorno: ${result}`);
         res.json({ iptu: result.rows });
     } catch (err: any) {
         res.status(500).json({ error: err.message });
     }
 };
+export const getQRCodeOrCodBarras = async (req: Request, res: Response) => {
+    const tipo = req.query.tipo as string;
+     let codigoHtml = "";
 
+  if (tipo === "codigoDeBarras") {
+    codigoHtml = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=123456789" />`;
+  } else if (tipo === "qrcode") {
+    codigoHtml = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=QRCodeDemo" />`;
+  }
+
+  res.send(`
+    <h2>Tipo selecionado: ${tipo}</h2>${codigoHtml}`);
+};
 export function normalizarNome(nome: string): string {
     return nome
         .normalize("NFD") // separa letra do acento
