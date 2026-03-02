@@ -2,7 +2,7 @@ services:
   backend:
     build: ./backend
     ports:
-      - "3001:3001"
+      - "3051:3001"
     networks:
       - app-network
     depends_on:

@@ -15,7 +15,7 @@ function Dashboard() {
   const buscarDados = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3001/usuario/iptu-por-usuario",
+        "http://localhost:3051/usuario/iptu-por-usuario",
         { userId: user.id }
       );
 
@@ -28,7 +28,7 @@ function Dashboard() {
   const buscarComentarios = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:3001/comentario"
+        "http://localhost:3051/comentario"
       );
 
       setComentarios(response.data);

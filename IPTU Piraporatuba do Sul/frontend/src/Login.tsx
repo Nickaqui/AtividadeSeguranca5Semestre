@@ -16,7 +16,7 @@ function Login() {
 
         try {
             const response = await axios.post(
-                "http://localhost:3001/usuario/login",
+                "http://localhost:3051/usuario/login",
                 { email, password }
             );
             const user = response.data.user;
@@ -35,7 +35,7 @@ function Login() {
 
         try {
             const response = await axios.post(
-                "http://localhost:3001/usuario/novo-login",
+                "http://localhost:3051/usuario/novo-login",
                 { email, password, nome }
             );
             if (response.data.success) {
