@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS usuario (
 
 INSERT INTO usuario (nome, email, senha, tipo_usuario_id)
 VALUES 
-('Rodrigo Silva Silva', 'rodrigo@email.com', 'senha123', 1),
+('Rodrigo Silva Peres', 'rodrigo@email.com', 'senha123', 1),
 ('Aluno Teste', 'aluno@email.com', 'senha123', 2);
 
 CREATE TABLE IF NOT EXISTS iptu (

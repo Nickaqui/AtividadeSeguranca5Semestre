@@ -7,6 +7,7 @@ export const criarComentario = async (req: Request, res: Response) => {
     const xss = require('xss');
 
     const textoLimpo = xss(texto);
+    console.log(`Texto limpo: ${textoLimpo}`);
     const query = `INSERT INTO comentario (texto, usuario_id) VALUES ($1, $2)`;
 
     try {
