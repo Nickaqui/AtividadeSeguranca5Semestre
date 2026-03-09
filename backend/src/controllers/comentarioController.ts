@@ -1,8 +1,12 @@
 import { Request, Response } from "express";
 import db from "../database";
+import sanitize from "sanitize-html";
 
 export const criarComentario = async (req: Request, res: Response) => {
-    const { texto, usuarioId } = req.body;
+    let { texto, usuarioId } = req.body;
+
+    // sanitiza o conteúdo para remover tags/malas intenções
+    texto = sanitize(texto, { allowedTags: [], allowedAttributes: {} });
 
     // utilizar parâmetro para evitar injeção de SQL
     const query = "INSERT INTO comentario (texto, usuario_id) VALUES ($1, $2)";
