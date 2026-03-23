@@ -3,10 +3,12 @@ import { useEffect, useState } from "react";
 
 import type { Comentario } from "./Tipos/Comentario";
 import type { Iptuu } from "./Tipos/Iptuu";
+import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-
+  const navigate = useNavigate();
+  const [message, setMessage] = useState("");
   const [menuAberto, setMenuAberto] = useState(false);
   const [iptu, setIptu] = useState<Iptuu | null>(null);
   const [comentarios, setComentarios] = useState<Comentario[]>([]);
@@ -14,6 +16,18 @@ function Dashboard() {
   const [tipoCodigo, setTipoCodigo] = useState("codigoDeBarras");
   const [htmlRetorno, setHtmlRetorno] = useState("");
 
+  const handleGerenciamento = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        try {
+          
+            localStorage.setItem("user", JSON.stringify(user));
+
+            navigate("/gerenciamento");
+        } catch {
+            setMessage("Erro no login");
+        }
+    };
   useEffect(() => {
     const buscarDados = async () => {
       try {
@@ -86,12 +100,13 @@ function Dashboard() {
 
           {menuAberto && (
             <div style={styles.dropdown}>
-              <button onClick={() => alert("Listar Munícipes")}>
-                Listar Munícipes
-              </button>
-              <button onClick={() => alert("Outra opção")}>
-                Outra opção
-              </button>
+              {user.id === 1 && (
+                <button
+                  onClick={handleGerenciamento}
+                >
+                  Gerenciar IPTUs {message}
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -145,15 +160,11 @@ function Dashboard() {
         <ul>
           {comentarios.map((comentario, index) => (
             <li key={index}>
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: `
-                  <strong>Usuário:</strong> ${comentario.usuario_id}
-                  <br/>
-                  <strong>Mensagem:</strong> ${comentario.texto}
-                `,
-                }}
-              />
+              <div>
+                <strong>Usuário:</strong> {comentario.usuario_id}
+                <br />
+                <strong>Mensagem:</strong> {comentario.texto}
+              </div>
             </li>
           ))}
         </ul>

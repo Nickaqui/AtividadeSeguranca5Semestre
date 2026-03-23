@@ -3,7 +3,7 @@ import db from "../database";
 
 export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
-    console.log(`Recebendo login para email: ${req.body}`);
+    console.log(`Recebendo login para email: ${JSON.stringify(req.body)}`);
     const query = 
         `SELECT * FROM usuario WHERE email = $1 AND senha = $2`;
 
@@ -21,22 +21,20 @@ export const novoLogin = async (req: Request, res: Response) => {
     const { email, password, nome } = req.body;
 
     const nomeNormalizado = normalizarNome(nome);
-    const queryNomeIpuExiste = "SELECT * FROM iptu WHERE nome = '" + nomeNormalizado +"'";
-    const iptuResult = await db.query(queryNomeIpuExiste);
+    const queryNomeIpuExiste = "SELECT * FROM iptu WHERE nome = $1";
+    const iptuResult = await db.query(queryNomeIpuExiste, [nomeNormalizado]);
 
     if (iptuResult.rowCount && iptuResult.rowCount > 0) {
-        const query = `INSERT INTO usuario (email, senha, nome, tipo_usuario_id) VALUES ('${email}', '${password}', '${nome}', 3)`;
+        const query = `INSERT INTO usuario (email, senha, nome, tipo_usuario_id) VALUES ($1, $2, $3, 3)`;
+        const result = await db.query(query, [email, password, nome]);
 
         console.log(`Query Executada: ${query}`);
 
-        const result = await db.query(query);
-        
-        const queryIdUsuario = `SELECT id FROM usuario WHERE email = '${email}' AND senha = '${password}'`;
-        const resultIdUsuario = await db.query(queryIdUsuario);
-        
-        const queryUpdateTabelaIptu = `UPDATE iptu set usuario_id = '${resultIdUsuario.rows[0].id}' WHERE nome = '${nomeNormalizado}'`;
-        const resultUpdate = await db.query(queryUpdateTabelaIptu);
-        
+        const queryIdUsuario = `SELECT id FROM usuario WHERE email = $1 AND senha = $2`;
+        const resultIdUsuario = await db.query(queryIdUsuario, [email, password]);
+
+        const queryUpdateTabelaIptu = `UPDATE iptu set usuario_id = $1 WHERE nome = $2`;
+        const resultUpdate = await db.query(queryUpdateTabelaIptu, [resultIdUsuario.rows[0].id, nomeNormalizado]);
 
         if (result.rowCount && result.rowCount > 0 && resultUpdate.rowCount && resultUpdate.rowCount > 0) {
             res.json({ success: true, user: result.rows[0] });
@@ -53,7 +51,7 @@ export const novoLogin = async (req: Request, res: Response) => {
 export const atualizarIptu = async (req: Request, res: Response) => {
     const { usuarioId: usuarioId, novoValor: novoValor } = req.body;
 
-    const query = `UPDATE iptu SET valor = ${novoValor} WHERE usuario_id = ${usuarioId}`;
+    const query = `UPDATE iptu SET valor = $1 WHERE usuario_id = $2`;
 
     try {
         await db.query(query);
@@ -62,14 +60,28 @@ export const atualizarIptu = async (req: Request, res: Response) => {
         res.status(500).json({ error: err.message });
     }
 };
+
 export const getIptuPorIdUsuario = async (req: Request, res: Response) => {
     const usuarioId = req.query.usuarioId as string;
 
-    const query = `SELECT * FROM iptu WHERE usuario_id = ${usuarioId}`;
+    const query = `SELECT * FROM iptu WHERE usuario_id = $1`;
+    console.log(`Query Executada: ${query}`);
+    try {
+        const result = await db.query(query, [usuarioId]);
+        console.log(`Retorno: ${result}`);
+        res.json({ iptu: result.rows });
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+export const getIptus = async (req: Request, res: Response) => {
+    const usuarioId = req.query.usuarioId as string;
+
+    const query = `SELECT * FROM iptu`;
     console.log(`Query Executada: ${query}`);
     try {
         const result = await db.query(query);
-        console.log(`Retorno: ${result}`);
         res.json({ iptu: result.rows });
     } catch (err: any) {
         res.status(500).json({ error: err.message });
@@ -78,15 +90,20 @@ export const getIptuPorIdUsuario = async (req: Request, res: Response) => {
 export const getQRCodeOrCodBarras = async (req: Request, res: Response) => {
     const tipo = req.query.tipo as string;
      let codigoHtml = "";
-
+  if(tipo !== "codigoDeBarras" && tipo !== "qrcode") {
+    
+    return res.status(400).json({ error: "Tipo inválido" });
+  } 
   if (tipo === "codigoDeBarras") {
     codigoHtml = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=123456789" />`;
   } else if (tipo === "qrcode") {
     codigoHtml = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=QRCodeDemo" />`;
   }
+const xss = require('xss');
 
+    const textoLimpo = xss(tipo);
   res.send(`
-    <h2>Tipo selecionado: ${tipo}</h2>${codigoHtml}`);
+    <h2>Tipo selecionado: ${textoLimpo}</h2>${codigoHtml}`);
 };
 export function normalizarNome(nome: string): string {
     return nome
