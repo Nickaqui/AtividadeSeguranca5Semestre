@@ -5,6 +5,7 @@ import commentRoutes from "./routes/comentarioRoutes";
 import hackerMalvadao from "./routes/hackerMalvadaoRoutes";
 
 const app = express();
+(global as any).segredoJwt = "Tnlmaslkcalsdfkalj0129iT";
 
 app.use(cors());
 app.use(express.json());

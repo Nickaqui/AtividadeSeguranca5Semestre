@@ -1,9 +1,15 @@
 import { Request, Response } from "express";
 import db from "../database";
+import ValidarToken from "../Services/jwtServices";
+import { RetornoPayload } from "../Tipos/retornoPayload";
 
 export const criarComentario = async (req: Request, res: Response) => {
     const { texto, usuarioId } = req.body;
-
+     const token = req.headers.authorization;
+        const payload = ValidarToken(token as string) as RetornoPayload | null;
+        if(!payload) {
+            return res.status(401).json({ success: false, message: "Token inválido" });
+        }
     const xss = require('xss');
 
     const textoLimpo = xss(texto);

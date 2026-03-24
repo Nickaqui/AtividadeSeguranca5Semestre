@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
 import db from "../database";
+import jwt from "jsonwebtoken";
+import jwtService from "../Services/jwtServices";
+import { RetornoPayload } from "../Tipos/retornoPayload";
+import ValidarToken  from "../Services/jwtServices";
 
 export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
@@ -12,7 +16,14 @@ export const login = async (req: Request, res: Response) => {
     const result = await db.query(query, [email, password]);
 
     if (result.rowCount && result.rowCount > 0) {
-        res.json({ success: true, user: result.rows[0] });
+        const token = jwt.sign(
+            { 
+            id: result.rows[0].id, 
+            email: result.rows[0].email, 
+            tipo: result.rows[0].tipo_usuario_id 
+            }
+            , (global as any).segredoJwt);
+        res.json({ success: true, user: result.rows[0], token });
     } else {
         res.status(401).json({ success: false, message: "Falha no login" });
     }
@@ -21,7 +32,7 @@ export const novoLogin = async (req: Request, res: Response) => {
     const { email, password, nome } = req.body;
 
     const nomeNormalizado = normalizarNome(nome);
-    const queryNomeIpuExiste = "SELECT * FROM iptu WHERE nome = $1";
+    const queryNomeIpuExiste = `SELECT * FROM iptu WHERE nome = $1`;
     const iptuResult = await db.query(queryNomeIpuExiste, [nomeNormalizado]);
 
     if (iptuResult.rowCount && iptuResult.rowCount > 0) {
@@ -37,7 +48,14 @@ export const novoLogin = async (req: Request, res: Response) => {
         const resultUpdate = await db.query(queryUpdateTabelaIptu, [resultIdUsuario.rows[0].id, nomeNormalizado]);
 
         if (result.rowCount && result.rowCount > 0 && resultUpdate.rowCount && resultUpdate.rowCount > 0) {
-            res.json({ success: true, user: result.rows[0] });
+            const token = jwt.sign(
+            { 
+            id: result.rows[0].id, 
+            email: result.rows[0].email, 
+            tipo: result.rows[0].tipo_usuario_id 
+            }
+            , (global as any).segredoJwt);
+            res.json({ success: true, user: result.rows[0], token });
         } else {
             res.status(401).json({ success: false, message: "Falha no login" });
         }
@@ -50,11 +68,20 @@ export const novoLogin = async (req: Request, res: Response) => {
 
 export const atualizarIptu = async (req: Request, res: Response) => {
     const { usuarioId: usuarioId, novoValor: novoValor } = req.body;
+    const token = req.headers.authorization;
+    const payload = ValidarToken(token as string) as RetornoPayload | null;
+
+    if(!payload) {
+        return res.status(401).json({ success: false, message: "Token inválido" });
+    }
+
+    if(payload.tipo.valueOf() !== "1" && payload.tipo.valueOf() !== "2") {
+        res.status(404).json({ success: false, message: `Você não possui acesso a esse recurso.` });
+    }
 
     const query = `UPDATE iptu SET valor = $1 WHERE usuario_id = $2`;
-
     try {
-        await db.query(query);
+        await db.query(query, [novoValor, usuarioId]);
         res.json({ message: "IPTU atualizado" });
     } catch (err: any) {
         res.status(500).json({ error: err.message });
@@ -63,6 +90,13 @@ export const atualizarIptu = async (req: Request, res: Response) => {
 
 export const getIptuPorIdUsuario = async (req: Request, res: Response) => {
     const usuarioId = req.query.usuarioId as string;
+
+    const token = req.headers.authorization;
+    const payload = ValidarToken(token as string) as RetornoPayload | null;
+
+    if(!payload) {
+        return res.status(401).json({ success: false, message: "Token inválido" });
+    }
 
     const query = `SELECT * FROM iptu WHERE usuario_id = $1`;
     console.log(`Query Executada: ${query}`);
@@ -77,7 +111,16 @@ export const getIptuPorIdUsuario = async (req: Request, res: Response) => {
 
 export const getIptus = async (req: Request, res: Response) => {
     const usuarioId = req.query.usuarioId as string;
+    const token = req.headers.authorization;
+    const payload = ValidarToken(token as string) as RetornoPayload | null;
 
+    if(!payload) {
+        return res.status(401).json({ success: false, message: "Token inválido" });
+    }
+    if(payload.tipo.valueOf() !== "1" && payload.tipo.valueOf() !== "2") {
+        res.status(404).json({ success: false, message: `Você não possui acesso a esse recurso.` });
+    }
+    
     const query = `SELECT * FROM iptu`;
     console.log(`Query Executada: ${query}`);
     try {
@@ -89,7 +132,12 @@ export const getIptus = async (req: Request, res: Response) => {
 };
 export const getQRCodeOrCodBarras = async (req: Request, res: Response) => {
     const tipo = req.query.tipo as string;
-     let codigoHtml = "";
+      const token = req.headers.authorization;
+    const payload = ValidarToken(token as string) as RetornoPayload | null;
+    if(!payload) {
+        return res.status(401).json({ success: false, message: "Token inválido" });
+    }
+    let codigoHtml = "";
   if(tipo !== "codigoDeBarras" && tipo !== "qrcode") {
     
     return res.status(400).json({ error: "Tipo inválido" });
