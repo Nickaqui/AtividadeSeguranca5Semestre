@@ -5,7 +5,11 @@ import commentRoutes from "./routes/comentarioRoutes";
 import hackerMalvadao from "./routes/hackerMalvadaoRoutes";
 
 const app = express();
+<<<<<<< Updated upstream
 (global as any).segredoJwt = "Tnlmaslkcalsdfkalj0129iT";
+=======
+(global as any).segredoJWT = "dasundasjndijnfpksdn";
+>>>>>>> Stashed changes
 
 app.use(cors());
 app.use(express.json());

@@ -17,12 +17,12 @@ export const login = async (req: Request, res: Response) => {
 
     if (result.rowCount && result.rowCount > 0) {
         const token = jwt.sign(
-            { 
-            id: result.rows[0].id, 
-            email: result.rows[0].email, 
-            tipo: result.rows[0].tipo_usuario_id 
+            {
+                id: result.rows[0].id,
+                email: result.rows[0].email,
+                tipo_usuario_id: result.rows[0].tipo_usuario_id,
             }
-            , (global as any).segredoJwt);
+            , (global as any).segredoJWT);
         res.json({ success: true, user: result.rows[0], token });
     } else {
         res.status(401).json({ success: false, message: "Falha no login" });
@@ -49,12 +49,12 @@ export const novoLogin = async (req: Request, res: Response) => {
 
         if (result.rowCount && result.rowCount > 0 && resultUpdate.rowCount && resultUpdate.rowCount > 0) {
             const token = jwt.sign(
-            { 
-            id: result.rows[0].id, 
-            email: result.rows[0].email, 
-            tipo: result.rows[0].tipo_usuario_id 
+            {
+                id: result.rows[0].id,
+                email: result.rows[0].email,
+                tipo_usuario_id: result.rows[0].tipo_usuario_id,
             }
-            , (global as any).segredoJwt);
+            , (global as any).segredoJWT);
             res.json({ success: true, user: result.rows[0], token });
         } else {
             res.status(401).json({ success: false, message: "Falha no login" });
