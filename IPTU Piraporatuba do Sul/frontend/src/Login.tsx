@@ -17,14 +17,14 @@ function Login() {
         try {
             const response = await axios.post(
                 "http://localhost:3001/usuario/login",
-                { email, password }
+                { email, password }, { withCredentials: true }
             );
-            const user = response.data.user;
 
-            // salvando no localStorage
-            localStorage.setItem("user", JSON.stringify(user));
-
-            navigate("/dashboard");
+            if(!response.data.success) {
+                setMessage("Erro no login");
+            } else {
+                navigate("/dashboard");
+            }
         } catch {
             setMessage("Erro no login");
         }

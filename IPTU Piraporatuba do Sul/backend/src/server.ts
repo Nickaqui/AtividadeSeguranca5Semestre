@@ -7,7 +7,14 @@ import hackerMalvadao from "./routes/hackerMalvadaoRoutes";
 const app = express();
 (global as any).segredoJwt = "Tnlmaslkcalsdfkalj0129iT";
 
-app.use(cors());
+const cookiesParser = require("cookie-parser");
+app.use(cookiesParser());
+
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true
+}));
+
 app.use(express.json());
 // app.use(express.urlencoded({ extended: true }));
 

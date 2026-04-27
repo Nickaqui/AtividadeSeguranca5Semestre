@@ -21,8 +21,6 @@ function Dashboard() {
 
         try {
           
-            localStorage.setItem("user", JSON.stringify(user));
-
             navigate("/gerenciamento");
         } catch {
             setMessage("Erro no login");

@@ -5,6 +5,17 @@ import jwtService from "../Services/jwtServices";
 import { RetornoPayload } from "../Tipos/retornoPayload";
 import ValidarToken  from "../Services/jwtServices";
 
+export const usuarioLogado = async (req: Request, res: Response) => {
+    const token = req.cookies.token;
+    const payload = ValidarToken(token) as RetornoPayload | null;
+    if (payload) {
+        res.json({ success:true ,user: payload });
+    }
+    else{
+        res.status(401).json({ success: false, message: "Token inválido" });
+    }
+}
+
 export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     console.log(`Recebendo login para email: ${JSON.stringify(req.body)}`);
@@ -20,10 +31,14 @@ export const login = async (req: Request, res: Response) => {
             { 
             id: result.rows[0].id, 
             email: result.rows[0].email, 
-            tipo: result.rows[0].tipo_usuario_id 
+            tipo: result.rows[0].tipo_usuario_id,
+            nome: result.rows[0].nome
             }
             , (global as any).segredoJwt);
-        res.json({ success: true, user: result.rows[0], token });
+        res.cookie("token", token,
+            {httpOnly: true, sameSite:"strict", secure: false});
+
+        res.json({ success: true });
     } else {
         res.status(401).json({ success: false, message: "Falha no login" });
     }

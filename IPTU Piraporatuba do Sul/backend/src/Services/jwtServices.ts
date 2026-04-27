@@ -7,7 +7,8 @@ export default function ValidarToken(token: string): RetornoPayload | null {
         return {
             id: decoded.id,
             tipo: decoded.tipo,
-            email: decoded.email
+            email: decoded.email,
+            nome: decoded.nome
         };
     } catch (error) {
         return null;
