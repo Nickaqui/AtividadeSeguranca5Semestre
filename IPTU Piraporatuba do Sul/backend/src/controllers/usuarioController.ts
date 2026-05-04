@@ -14,7 +14,7 @@ export const usuarioLogado = async (req: Request, res: Response) => {
     else{
         res.status(401).json({ success: false, message: "Token inválido" });
     }
-}
+};
 
 export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;

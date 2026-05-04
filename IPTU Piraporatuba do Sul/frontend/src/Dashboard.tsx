@@ -6,7 +6,8 @@ import type { Iptuu } from "./Tipos/Iptuu";
 import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  // const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const [user, setUser] = useState<{ id: number; nome: string, email: string, tipo: number } | null>(null);
   const navigate = useNavigate();
   const [message, setMessage] = useState("");
   const [menuAberto, setMenuAberto] = useState(false);
@@ -31,10 +32,16 @@ function Dashboard() {
       try {
 
         const response = await axios.get<{ iptu: Iptuu[] }>(
-          "http://localhost:3001/usuario/iptu-por-usuario?usuarioId=" + user.id
+          "http://localhost:3001/usuario/iptu-por-usuario?usuarioId=1"
         );
-
         setIptu(response.data.iptu[0]);
+
+        const payload = await axios.get(
+          "http://localhost:3001/usuario/usuario-logado",{withCredentials: true}
+        );
+        console.log("Payload do usuário logado:", payload.data.user);
+        setUser(payload.data.user);
+
       } catch (error) {
         console.error("Erro ao buscar IPTU", error);
       }
@@ -51,18 +58,17 @@ function Dashboard() {
         console.error("Erro ao buscar comentários", error);
       }
     };
-    if (user?.id) {
+      
       buscarDados();
       buscarComentarios();
-    }
-  }, [user]);
+  }, []);
 
   const enviarComentario = async () => {
     if (!novoComentario.trim()) return;
 
     try {
       await axios.post("http://localhost:3001/comentario", {
-        usuarioId: user.id,
+        usuarioId: 1,
         texto: novoComentario,
       });
 
@@ -89,7 +95,7 @@ function Dashboard() {
   return (
     <div style={styles.container}>
       <header style={styles.header}>
-        <h2>Bem-vindo, {user.nome}</h2>
+        <h2>Bem-vindo, {user?.nome}</h2>
 
         <div style={{ position: "relative" }}>
           <button onClick={() => setMenuAberto(!menuAberto)}>
@@ -98,7 +104,7 @@ function Dashboard() {
 
           {menuAberto && (
             <div style={styles.dropdown}>
-              {user.id === 1 && (
+              {user?.id === 1 && (
                 <button
                   onClick={handleGerenciamento}
                 >

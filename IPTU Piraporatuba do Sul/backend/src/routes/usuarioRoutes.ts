@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { login, atualizarIptu, novoLogin, getIptuPorIdUsuario, getQRCodeOrCodBarras, getIptus } from "../controllers/usuarioController";
+import { login, atualizarIptu, novoLogin, getIptuPorIdUsuario, getQRCodeOrCodBarras, getIptus, usuarioLogado } from "../controllers/usuarioController";
 
 const router = Router();
 
@@ -8,6 +8,7 @@ router.post("/novo-login", novoLogin);
 router.post("/atualizar-iptu", atualizarIptu);
 router.get("/iptu-por-usuario", getIptuPorIdUsuario);
 router.get("/codigo-qr-ou-barra", getQRCodeOrCodBarras);
+router.get("/usuario-logado", usuarioLogado);
 router.get("/iptus", getIptus);
 
 export default router;
