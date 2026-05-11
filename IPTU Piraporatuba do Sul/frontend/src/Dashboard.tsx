@@ -32,7 +32,7 @@ function Dashboard() {
       try {
 
         const response = await axios.get<{ iptu: Iptuu[] }>(
-          "http://localhost:3001/usuario/iptu-por-usuario?usuarioId=1"
+          "http://localhost:3001/usuario/iptu-por-usuario", {withCredentials: true}
         );
         setIptu(response.data.iptu[0]);
 
@@ -68,9 +68,8 @@ function Dashboard() {
 
     try {
       await axios.post("http://localhost:3001/comentario", {
-        usuarioId: 1,
         texto: novoComentario,
-      });
+      }, { withCredentials: true });
 
       // Atualiza lista após enviar
       const response = await axios.get("http://localhost:3001/comentario");
@@ -84,7 +83,7 @@ function Dashboard() {
   const buscarCodigo = async () => {
     const response = await axios.get(
       "http://localhost:3001/usuario/codigo-qr-ou-barra?tipo=" + tipoCodigo
-    );
+    , { withCredentials: true });
 
     setHtmlRetorno(response.data);
   };

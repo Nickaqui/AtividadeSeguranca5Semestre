@@ -104,9 +104,7 @@ export const atualizarIptu = async (req: Request, res: Response) => {
 };
 
 export const getIptuPorIdUsuario = async (req: Request, res: Response) => {
-    const usuarioId = req.query.usuarioId as string;
-
-    const token = req.headers.authorization;
+    const token = req.cookies.token;
     const payload = ValidarToken(token as string) as RetornoPayload | null;
 
     if(!payload) {
@@ -116,7 +114,7 @@ export const getIptuPorIdUsuario = async (req: Request, res: Response) => {
     const query = `SELECT * FROM iptu WHERE usuario_id = $1`;
     console.log(`Query Executada: ${query}`);
     try {
-        const result = await db.query(query, [usuarioId]);
+        const result = await db.query(query, [payload.id]);
         console.log(`Retorno: ${result}`);
         res.json({ iptu: result.rows });
     } catch (err: any) {
@@ -147,7 +145,7 @@ export const getIptus = async (req: Request, res: Response) => {
 };
 export const getQRCodeOrCodBarras = async (req: Request, res: Response) => {
     const tipo = req.query.tipo as string;
-      const token = req.headers.authorization;
+    const token = req.cookies.token;
     const payload = ValidarToken(token as string) as RetornoPayload | null;
     if(!payload) {
         return res.status(401).json({ success: false, message: "Token inválido" });
