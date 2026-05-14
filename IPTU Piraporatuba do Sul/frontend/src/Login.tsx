@@ -25,7 +25,11 @@ function Login() {
             } else {
                 navigate("/dashboard");
             }
-        } catch {
+        } catch (error: unknown){
+            if(axios.isAxiosError(error) && error.response && error.response.status === 429) {
+                setMessage("Você excedeu o número de tentativas. Tente novamente em 15 minutos.");
+                return;
+            }
             setMessage("Erro no login");
         }
     };
