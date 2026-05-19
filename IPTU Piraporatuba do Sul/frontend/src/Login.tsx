@@ -16,7 +16,7 @@ function Login() {
 
         try {
             const response = await axios.post(
-                "http://localhost:3001/usuario/login",
+                "/api/usuario/login",
                 { email, password }, { withCredentials: true }
             );
 
@@ -38,10 +38,15 @@ function Login() {
         e.preventDefault();
 
         try {
+            if (!validarSenha(password)) {
+                setMessage("A senha deve conter pelo menos 8 caracteres, incluindo letras maiúsculas, minúsculas, números e caracteres especiais.");
+                return;
+            }
             const response = await axios.post(
-                "http://localhost:3001/usuario/novo-login",
+                "/api/usuario/novo-login",
                 { email, password, nome }
             );
+            
             if (response.data.success) {
                 setMessage("Usuário criado com sucesso!");
                 setIsRegistering(false);
@@ -50,7 +55,11 @@ function Login() {
             setMessage("Erro no cadastro");
         }
     };
+ const validarSenha = (senha: string) => {
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
+        return regex.test(senha);
+    };
     return (
         <div style={styles.container}>
             <h1>{isRegistering ? "Criar Conta" : "Login"}</h1>

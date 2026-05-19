@@ -45,7 +45,9 @@ export const login = async (req: Request, res: Response) => {
 };
 export const novoLogin = async (req: Request, res: Response) => {
     const { email, password, nome } = req.body;
-
+    if(!validarSenha(password)) {
+        return res.status(400).json({ success: false, message: "A senha deve conter pelo menos 8 caracteres, incluindo letras maiúsculas, minúsculas, números e caracteres especiais." });
+    }
     const nomeNormalizado = normalizarNome(nome);
     const queryNomeIpuExiste = `SELECT * FROM iptu WHERE nome = $1`;
     const iptuResult = await db.query(queryNomeIpuExiste, [nomeNormalizado]);
@@ -172,4 +174,8 @@ export function normalizarNome(nome: string): string {
         .replace(/[\u0300-\u036f]/g, "") // remove os acentos
         .toUpperCase() // deixa tudo maiúsculo
         .trim(); // remove espaços extras no começo/fim
+}
+export function validarSenha(senha: string): boolean {
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return regex.test(senha);
 }
