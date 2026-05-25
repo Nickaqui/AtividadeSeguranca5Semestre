@@ -1,103 +1,92 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import type { Iptuu } from "./Tipos/Iptuu";
 
 function Gerenciamento() {
-
-  //const user = JSON.parse(localStorage.getItem("user") || "{}");
-
+  const navigate = useNavigate();
+  const [user, setUser] = useState<{ id: number; nome: string; email: string; tipo: number } | null>(null);
   const [iptus, setIptus] = useState<Iptuu[]>([]);
   const [novoValor, setNovoValor] = useState<{ [key: number]: number }>({});
   const [menuAberto, setMenuAberto] = useState(false);
 
   useEffect(() => {
-
-    const buscarIptus = async () => {
-
+    const verificarUsuarioEBuscarIptus = async () => {
       try {
-
-        const response = await axios.get<{ iptu: Iptuu[] }>(
-          "http://localhost:3001/usuario/iptus"
+        // Verifica o usuário logado usando o cookie JWT
+        const payload = await axios.get(
+          "http://localhost:3051/usuario/usuario-logado",
+          { withCredentials: true }
         );
+        const usuarioLogado = payload.data.user;
+        setUser(usuarioLogado);
 
+        // Se não for Admin (tipo 1), redireciona para o Dashboard
+        if (usuarioLogado.tipo !== 1) {
+          navigate("/dashboard");
+          return;
+        }
+
+        // Só busca IPTUs se for Admin
+        const response = await axios.get<{ iptu: Iptuu[] }>(
+          "http://localhost:3051/usuario/iptus",
+          { withCredentials: true }
+        );
         setIptus(response.data.iptu);
-
       } catch (error) {
-        console.error("Erro ao buscar IPTUs", error);
+        console.error("Erro ao verificar usuário ou buscar IPTUs", error);
+        navigate("/");
       }
-
     };
 
-    buscarIptus();
-
-  }, []);
+    verificarUsuarioEBuscarIptus();
+  }, [navigate]);
 
   const atualizarIptu = async (usuarioId: number) => {
-
     try {
-
       await axios.put(
-        "http://localhost:3001/usuario/atualizar-iptu",
-        {
-          usuarioId: usuarioId,
-          novoValor: novoValor[usuarioId]
-        }
+        "http://localhost:3051/usuario/atualizar-iptu",
+        { usuarioId, novoValor: novoValor[usuarioId] },
+        { withCredentials: true },
       );
 
       alert("IPTU atualizado");
 
       // Atualiza lista novamente
       const response = await axios.get<{ iptu: Iptuu[] }>(
-        "http://localhost:3001/iptu"
+        "http://localhost:3051/usuario/iptus",
+        { withCredentials: true },
       );
 
       setIptus(response.data.iptu);
-
     } catch (error) {
-
       console.error("Erro ao atualizar IPTU", error);
-
     }
-
   };
 
   return (
-
     <div style={styles.container}>
-
       <header style={styles.header}>
-
-        <h2>Gerenciamento de IPTUs</h2>
+        <h2>Gerenciamento de IPTUs - {user?.nome}</h2>
 
         <div style={{ position: "relative" }}>
-
-          <button onClick={() => setMenuAberto(!menuAberto)}>
-            ☰ Menu
-          </button>
+          <button onClick={() => setMenuAberto(!menuAberto)}>☰ Menu</button>
 
           {menuAberto && (
             <div style={styles.dropdown}>
-
-              <button onClick={() => window.location.href = "/dashboard"}>
+              <button onClick={() => (window.location.href = "/dashboard")}>
                 Voltar ao Dashboard
               </button>
-
             </div>
           )}
-
         </div>
-
       </header>
 
-      <h3 style={{ marginTop: "40px" }}>
-        Lista de Munícipes e IPTUs
-      </h3>
+      <h3 style={{ marginTop: "40px" }}>Lista de Munícipes e IPTUs</h3>
 
       {iptus.map((iptu) => (
-
         <div key={iptu.id} style={styles.card}>
-
           <p>
             <strong>Munícipe:</strong> {iptu.nome}
           </p>
@@ -116,39 +105,30 @@ function Gerenciamento() {
             onChange={(e) =>
               setNovoValor({
                 ...novoValor,
-                [iptu.usuario_id]: Number(e.target.value)
+                [iptu.usuario_id]: Number(e.target.value),
               })
             }
           />
 
-          <button
-            onClick={() =>
-              atualizarIptu(iptu.usuario_id)
-            }
-          >
+          <button onClick={() => atualizarIptu(iptu.usuario_id)}>
             Atualizar IPTU
           </button>
-
         </div>
-
       ))}
-
     </div>
-
   );
 }
 
 const styles = {
-
   container: {
     padding: "40px",
-    fontFamily: "Arial"
+    fontFamily: "Arial",
   },
 
   header: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
   },
 
   card: {
@@ -156,7 +136,7 @@ const styles = {
     padding: "20px",
     border: "1px solid #ccc",
     borderRadius: "8px",
-    width: "320px"
+    width: "320px",
   },
 
   dropdown: {
@@ -168,9 +148,8 @@ const styles = {
     display: "flex",
     flexDirection: "column" as const,
     padding: "10px",
-    gap: "5px"
-  }
-
+    gap: "5px",
+  },
 };
 
 export default Gerenciamento;

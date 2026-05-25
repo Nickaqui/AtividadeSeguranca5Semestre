@@ -85,7 +85,7 @@ export const novoLogin = async (req: Request, res: Response) => {
 
 export const atualizarIptu = async (req: Request, res: Response) => {
     const { usuarioId: usuarioId, novoValor: novoValor } = req.body;
-    const token = req.headers.authorization;
+    const token = req.cookies.token;
     const payload = ValidarToken(token as string) as RetornoPayload | null;
 
     if(!payload) {
@@ -126,7 +126,7 @@ export const getIptuPorIdUsuario = async (req: Request, res: Response) => {
 
 export const getIptus = async (req: Request, res: Response) => {
     const usuarioId = req.query.usuarioId as string;
-    const token = req.headers.authorization;
+    const token = req.cookies.token;
     const payload = ValidarToken(token as string) as RetornoPayload | null;
 
     if(!payload) {

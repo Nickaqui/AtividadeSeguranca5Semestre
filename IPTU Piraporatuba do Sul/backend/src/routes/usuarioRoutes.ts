@@ -15,7 +15,7 @@ const limiter = rateLimit({
 });
 router.post("/login", limiter, login);
 router.post("/novo-login", novoLogin);
-router.post("/atualizar-iptu", atualizarIptu);
+router.put("/atualizar-iptu", atualizarIptu);
 router.get("/iptu-por-usuario", getIptuPorIdUsuario);
 router.get("/codigo-qr-ou-barra", getQRCodeOrCodBarras);
 router.get("/usuario-logado", usuarioLogado);

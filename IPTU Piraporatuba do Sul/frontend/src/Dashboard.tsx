@@ -32,12 +32,12 @@ function Dashboard() {
       try {
 
         const response = await axios.get<{ iptu: Iptuu[] }>(
-          "http://localhost:3001/usuario/iptu-por-usuario", {withCredentials: true}
+          "http://localhost:3051/usuario/iptu-por-usuario", {withCredentials: true}
         );
         setIptu(response.data.iptu[0]);
 
         const payload = await axios.get(
-          "http://localhost:3001/usuario/usuario-logado",{withCredentials: true}
+          "http://localhost:3051/usuario/usuario-logado",{withCredentials: true}
         );
         console.log("Payload do usuário logado:", payload.data.user);
         setUser(payload.data.user);
@@ -50,7 +50,7 @@ function Dashboard() {
     const buscarComentarios = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3001/comentario"
+          "http://localhost:3051/comentario"
         );
 
         setComentarios(response.data);
@@ -67,12 +67,12 @@ function Dashboard() {
     if (!novoComentario.trim()) return;
 
     try {
-      await axios.post("http://localhost:3001/comentario", {
+      await axios.post("http://localhost:3051/comentario", {
         texto: novoComentario,
       }, { withCredentials: true });
 
       // Atualiza lista após enviar
-      const response = await axios.get("http://localhost:3001/comentario");
+      const response = await axios.get("http://localhost:3051/comentario");
       setComentarios(response.data);
 
       setNovoComentario("");
@@ -82,7 +82,7 @@ function Dashboard() {
   };
   const buscarCodigo = async () => {
     const response = await axios.get(
-      "http://localhost:3001/usuario/codigo-qr-ou-barra?tipo=" + tipoCodigo
+      "http://localhost:3051/usuario/codigo-qr-ou-barra?tipo=" + tipoCodigo
     , { withCredentials: true });
 
     setHtmlRetorno(response.data);
@@ -103,7 +103,7 @@ function Dashboard() {
 
           {menuAberto && (
             <div style={styles.dropdown}>
-              {user?.id === 1 && (
+              {user?.tipo === 1 && (
                 <button
                   onClick={handleGerenciamento}
                 >
